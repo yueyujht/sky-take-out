@@ -3,6 +3,7 @@ package com.sky.handler;
 import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
 import com.sky.constant.MessageConstant;
 import com.sky.exception.BaseException;
+import com.sky.exception.DeletionNotAllowedException;
 import com.sky.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -44,6 +45,11 @@ public class GlobalExceptionHandler {
         }else{
             return Result.error(MessageConstant.UNKNOWN_ERROR);
         }
+    }
+
+    public Result exceptionHnadler(DeletionNotAllowedException e){
+        String message = e.getMessage();
+        return Result.error(message);
     }
 
 }
