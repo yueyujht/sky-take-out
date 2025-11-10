@@ -2,7 +2,6 @@ package com.sky.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import com.sky.context.BaseContext;
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
@@ -17,7 +16,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -42,10 +40,6 @@ public class CategoryServiceImpl implements CategoryService {
                 .id(categoryDTO.getId())
                 .type(categoryDTO.getType())
                 .sort(categoryDTO.getSort())
-                .createTime(LocalDateTime.now())
-                .createUser(BaseContext.getCurrentId())
-                .updateTime(LocalDateTime.now())
-                .updateUser(BaseContext.getCurrentId())
                 .status(0)
                 .build();
         categoryMapper.insert(category);
@@ -60,7 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
     public PageResult pageQuery(CategoryPageQueryDTO categoryPageQueryDTO) {
         PageHelper.startPage(categoryPageQueryDTO.getPage(),categoryPageQueryDTO.getPageSize());
         Page<Category> catePage = categoryMapper.pageQuery(categoryPageQueryDTO);
-        Long total = catePage.getTotal();
+        long total = catePage.getTotal();
         List<Category> cateList = catePage.getResult();
         return new PageResult(total,cateList);
     }
@@ -89,8 +83,6 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = Category.builder()
                 .status(status)
                 .id(id)
-                .updateUser(BaseContext.getCurrentId())
-                .updateTime(LocalDateTime.now())
                 .build();
         categoryMapper.update(category);
     }
@@ -104,8 +96,17 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = new Category();
         System.out.println(categoryDTO);
         BeanUtils.copyProperties(categoryDTO,category);
-        category.setUpdateTime(LocalDateTime.now());
-        category.setUpdateUser(BaseContext.getCurrentId());
         categoryMapper.update(category);
+    }
+
+    /**
+     * 根据类型查看分类
+     * @param type
+     * @return
+     */
+    @Override
+    public List<Category> list(Integer type) {
+        List<Category> categoryList = categoryMapper.list(type);
+        return categoryList;
     }
 }

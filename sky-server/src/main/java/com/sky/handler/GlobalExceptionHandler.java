@@ -47,6 +47,7 @@ public class GlobalExceptionHandler {
         }
     }
 
+    @ExceptionHandler
     public Result exceptionHnadler(DeletionNotAllowedException e){
         String message = e.getMessage();
         return Result.error(message);

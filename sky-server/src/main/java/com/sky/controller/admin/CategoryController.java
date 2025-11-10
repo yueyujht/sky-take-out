@@ -15,6 +15,8 @@ import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("admin/category")
 @Slf4j
@@ -70,7 +72,7 @@ public class CategoryController {
      * @param id
      * @return
      */
-    @PostMapping("status/{status}")
+    @PostMapping("/status/{status}")
     @ApiOperation("启用、禁用分类")
     public Result startOrStop(@PathVariable Integer status,Long id){
         log.info("启用、禁用分类");
@@ -89,5 +91,18 @@ public class CategoryController {
         log.info("修改分类");
         categoryService.updateCate(categoryDTO);
         return Result.success();
+    }
+
+    /**
+     * 根据类型查看分类
+     * @param type
+     * @return
+     */
+    @GetMapping("/list")
+    @ApiOperation("根据类型查看分类")
+    public Result list(Integer type){
+        log.info("根据类型查看分类");
+        List<Category> categoryList = categoryService.list(type);
+        return Result.success(categoryList);
     }
 }
