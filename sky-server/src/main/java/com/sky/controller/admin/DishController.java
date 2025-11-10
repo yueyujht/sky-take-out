@@ -86,4 +86,17 @@ public class DishController {
         dishService.update(dishVO);
         return Result.success();
     }
+
+    /**
+     * 设置启/停售
+     * @param status
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation("设置启/停售")
+    public Result startOrStop(@PathVariable("status") Integer status,Integer id){
+        log.info("设置启/停售：{},{}",status,id);
+        dishService.startOrStop(status,id);
+        return Result.success();
+    }
 }

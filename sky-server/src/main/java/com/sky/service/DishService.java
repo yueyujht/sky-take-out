@@ -40,4 +40,10 @@ public interface DishService {
      * @param dishVO
      */
     void update(DishVO dishVO);
+
+    /**
+     * 设置启/停售
+     * @param status
+     */
+    void startOrStop(Integer status,Integer id);
 }
