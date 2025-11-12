@@ -19,6 +19,7 @@ import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,17 +46,18 @@ public class DishServiceImpl implements DishService {
     public void addDish(DishDTO dishDTO) {
         Dish dish = new Dish();
         BeanUtils.copyProperties(dishDTO,dish);
-        // 添加一条到dish表
+        // 添加菜品
         dishMapper.insert(dish);
         // 获取insert语句返回的主键值
         Long id = dish.getId();
-        // 添加到dish_flavor表
+        // 添加菜品口味（>=1）
         List<DishFlavor> dishFlavorList = dishDTO.getFlavors();
+        // 判断是否添加了口味
         if(dishFlavorList != null && !dishFlavorList.isEmpty()){
+            // 为每一个口味添加菜品id
             dishFlavorList.forEach(d -> d.setDishId(id));
             dishFlavorMapper.insertBatch(dishFlavorList);
         }
-
     }
 
     /**
@@ -78,11 +80,16 @@ public class DishServiceImpl implements DishService {
      */
     @Override
     public DishVO getById(Integer id) {
+        DishVO dishVO = new DishVO();
         // dish表
-        DishVO dishVO = dishMapper.getById(id);
+        Dish dish = dishMapper.getById(id);
+        BeanUtils.copyProperties(dish,dishVO);
         // dish_flavor表
         List<DishFlavor> dishFlavorList = dishFlavorMapper.queryByDishId(id);
         dishVO.setFlavors(dishFlavorList);
+        // 添加菜品分类
+        String cateName = categoryMapper.query(dishVO.getCategoryId());
+        dishVO.setCategoryName(cateName);
         return dishVO;
     }
 
@@ -95,8 +102,8 @@ public class DishServiceImpl implements DishService {
     public void deleteBatch(List<Integer> ids) {
         for (Integer id : ids) {
             // 根据id查询菜品
-            DishVO dishVO = dishMapper.getById(id);
-            if(dishVO.getStatus() != StatusConstant.DISABLE){
+            Dish dish = dishMapper.getById(id);
+            if(dish.getStatus() != StatusConstant.DISABLE){
                 // 启售状态，不能删除
                 throw new DeletionNotAllowedException(MessageConstant.DISH_ON_SALE);
             }
@@ -147,5 +154,15 @@ public class DishServiceImpl implements DishService {
         dish.setStatus(status);
         dish.setId(Long.valueOf(id));
         dishMapper.update(dish);
+    }
+
+    /**
+     * 根据分类id查询菜品（>=1）
+     * @param categoryId
+     */
+    @Override
+    public List<Dish> getsByCateId(Integer categoryId) {
+        List<Dish> dishList = dishMapper.getsByCateId(categoryId);
+        return dishList;
     }
 }

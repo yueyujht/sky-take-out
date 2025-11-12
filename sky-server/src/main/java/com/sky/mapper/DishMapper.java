@@ -41,7 +41,7 @@ public interface DishMapper {
      * @return
      */
     @Select("select * from dish where id = #{id}")
-    DishVO getById(Integer id);
+    Dish getById(Integer id);
 
     /**
      * 批量删除菜品
@@ -54,4 +54,12 @@ public interface DishMapper {
      */
     @AutoFill(OperationType.UPDATE)
     void update(Dish dish);
+
+    /**
+     * 根据分类id查询菜品（>=1）
+     * @param categoryId
+     * @return
+     */
+    @Select("select * from dish where category_id = #{categoryId}")
+    List<Dish> getsByCateId(Integer categoryId);
 }

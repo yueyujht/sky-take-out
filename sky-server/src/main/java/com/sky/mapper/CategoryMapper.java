@@ -47,11 +47,11 @@ public interface CategoryMapper {
     void update(Category category);
 
     /**
-     * 根据id查询分类
+     * 根据id查询分类名称（name）
      * @param id
      */
-    @Select("select * from category where id = #{id}")
-    Category query(Long id);
+    @Select("select name from category where id = #{id}")
+    String query(Long id);
 
     /**
      * 根据类型查看分类
