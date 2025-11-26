@@ -13,6 +13,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.springframework.web.util.UriBuilder;
 
 import java.io.IOException;
 import java.net.URI;
@@ -74,7 +75,7 @@ public class HttpClientUtil {
     }
 
     /**
-     * 发送POST方式请求
+     * 发送POST方式请求，表单格式
      * @param url
      * @param paramMap
      * @return
@@ -92,8 +93,10 @@ public class HttpClientUtil {
 
             // 创建参数列表
             if (paramMap != null) {
+                // NOTE:NameValuePair 是 Apache HttpClient 提供的“键值对”接口，专门用来放表单字段。
                 List<NameValuePair> paramList = new ArrayList();
                 for (Map.Entry<String, String> param : paramMap.entrySet()) {
+                    // NOTE:BasicNameValuePair是NameValuePair的实现类
                     paramList.add(new BasicNameValuePair(param.getKey(), param.getValue()));
                 }
                 // 模拟表单
@@ -121,7 +124,7 @@ public class HttpClientUtil {
     }
 
     /**
-     * 发送POST方式请求
+     * 发送POST方式请求，Json格式
      * @param url
      * @param paramMap
      * @return
@@ -169,11 +172,15 @@ public class HttpClientUtil {
 
         return resultString;
     }
+    /**
+     * 构造统一超时策略的 RequestConfig
+     */
     private static RequestConfig builderRequestConfig() {
         return RequestConfig.custom()
-                .setConnectTimeout(TIMEOUT_MSEC)
-                .setConnectionRequestTimeout(TIMEOUT_MSEC)
-                .setSocketTimeout(TIMEOUT_MSEC).build();
+                .setConnectTimeout(TIMEOUT_MSEC)     // 建立连接超时
+                .setConnectionRequestTimeout(TIMEOUT_MSEC) // 从连接池获取连接超时
+                .setSocketTimeout(TIMEOUT_MSEC)      // 读取数据超时
+                .build();
     }
 
 }
