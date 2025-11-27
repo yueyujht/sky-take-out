@@ -14,14 +14,6 @@ import java.util.List;
 @Mapper
 public interface DishMapper {
     /**
-     * 根据分类id查询数量
-     * @param id
-     * @return
-     */
-    @Select("select count(id) from dish where category_id = #{id}")
-    int count(Integer id);
-
-    /**
      * 新增菜品
      * @param dish
      */
@@ -62,4 +54,9 @@ public interface DishMapper {
      */
     @Select("select * from dish where category_id = #{categoryId}")
     List<Dish> getsByCateId(Integer categoryId);
+
+    /**
+     * 查询菜品
+     */
+    List<Dish> queryDish(Dish dish);
 }

@@ -31,7 +31,7 @@ public class CategoryController {
      */
     @PostMapping
     @ApiOperation("新增分类")
-    public Result addCate(@RequestBody CategoryDTO categoryDTO){
+    public Result insertCate(@RequestBody CategoryDTO categoryDTO){
         log.info("新增分类：{}",categoryDTO);
         categoryService.addCate(categoryDTO);
         return Result.success();

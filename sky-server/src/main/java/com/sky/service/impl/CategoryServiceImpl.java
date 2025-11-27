@@ -5,6 +5,8 @@ import com.github.pagehelper.PageHelper;
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
+import com.sky.entity.Dish;
+import com.sky.entity.Setmeal;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishMapper;
@@ -66,9 +68,15 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void deleteCate(Integer id) {
         // 查询该分类下是否有内容
-        int dish_count = dishMapper.count(id);
+        //  菜品
+        Dish dish = new Dish();
+        dish.setCategoryId(id);
+        List<Dish> dishList = dishMapper.queryDish(dish);
+        //  套餐
+        // TODO:套餐
+        Setmeal setmeal = new Setmeal();
         int setmeal_count = setmealMapper.count(id);
-        if(dish_count != 0 || setmeal_count != 0){
+        if(dishList != null || setmeal_count != 0){
             throw new DeletionNotAllowedException("该分类有内容！");
         }
         categoryMapper.deleteById(id);
@@ -94,7 +102,6 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void updateCate(CategoryDTO categoryDTO) {
         Category category = new Category();
-        System.out.println(categoryDTO);
         BeanUtils.copyProperties(categoryDTO,category);
         categoryMapper.update(category);
     }

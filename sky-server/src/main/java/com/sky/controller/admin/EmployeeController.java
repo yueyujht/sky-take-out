@@ -86,7 +86,7 @@ public class EmployeeController {
     @ApiOperation("新增员工")
     public Result save(@RequestBody EmployeeDTO employeeDTO){
         log.info("新增员工：{}",employeeDTO);
-        employeeService.save(employeeDTO);
+        employeeService.insertEmp(employeeDTO);
         return Result.success();
     }
 

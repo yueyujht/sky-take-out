@@ -81,8 +81,10 @@ public class DishServiceImpl implements DishService {
     public DishVO getById(Integer id) {
         DishVO dishVO = new DishVO();
         // dish表
-        Dish dish = dishMapper.getById(id);
-        BeanUtils.copyProperties(dish,dishVO);
+        Dish dish = new Dish();
+        dish.setId(id);
+        List<Dish> dishList = dishMapper.queryDish(dish);
+        BeanUtils.copyProperties(dishList.get(0),dishVO);
         // dish_flavor表
         List<DishFlavor> dishFlavorList = dishFlavorMapper.queryByDishId(id);
         dishVO.setFlavors(dishFlavorList);
