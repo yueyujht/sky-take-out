@@ -55,7 +55,7 @@ public class SetmealController {
      */
     @GetMapping("/{id}")
     @ApiOperation("根据套餐id查询套餐")
-    public Result getSmBySmIdWithDish(@PathVariable Long id){
+    public Result getSmBySmIdWithDish(@PathVariable Integer id){
         log.info("根据套餐id查询套餐");
         SetmealVO setmealVO = setmealService.getSmBySmIdWithDish(id);
         return Result.success(setmealVO);
@@ -69,7 +69,7 @@ public class SetmealController {
      */
     @DeleteMapping
     @ApiOperation("批量删除套餐")
-    public Result deleteBatch(@RequestParam List<Long> ids){
+    public Result deleteBatch(@RequestParam List<Integer> ids){
         log.info("批量删除套餐");
         setmealService.deleteBatch(ids);
         return Result.success();
@@ -96,7 +96,7 @@ public class SetmealController {
      */
     @PostMapping("/status/{status}")
     @ApiOperation("设置启售、停售状态")
-    public Result startOrStop(@PathVariable Integer status,Long id){
+    public Result startOrStop(@PathVariable Integer status,Integer id){
         log.info("设置启售、停售状态");
         setmealService.startOrStop(status,id);
         return Result.success();

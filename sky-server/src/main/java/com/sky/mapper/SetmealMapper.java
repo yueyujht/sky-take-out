@@ -2,11 +2,9 @@ package com.sky.mapper;
 
 import com.github.pagehelper.Page;
 import com.sky.annotation.AutoFill;
-import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
-import com.sky.result.PageResult;
 import com.sky.vo.SetmealVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -43,13 +41,13 @@ public interface SetmealMapper {
      * @return
      */
     @Select("select * from setmeal where id = #{setmealId};")
-    Setmeal getSmBySmId(Long setmealId);
+    Setmeal getSmBySmId(Integer setmealId);
 
     /**
      * 根据套餐id批量删除套餐
      * @param ids
      */
-    void deleteBatchBySmId(List<Long> ids);
+    void deleteBatchBySmId(List<Integer> ids);
 
     /**
      * 修改套餐
@@ -57,4 +55,11 @@ public interface SetmealMapper {
      */
     @AutoFill(OperationType.UPDATE)
     void update(Setmeal setmeal);
+
+    /**
+     * List<Setmeal>
+     * @param setmeal
+     * @return
+     */
+    List<Setmeal> getSmByCateId(Setmeal setmeal);
 }

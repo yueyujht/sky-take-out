@@ -51,7 +51,7 @@ public interface CategoryMapper {
      * @param id
      */
     @Select("select name from category where id = #{id}")
-    String query(Long id);
+    String query(Integer id);
 
     /**
      * 根据类型查看分类

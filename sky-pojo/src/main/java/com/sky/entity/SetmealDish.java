@@ -19,13 +19,13 @@ public class SetmealDish implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Long id;
+    private Integer id;
 
     //套餐id
-    private Long setmealId;
+    private Integer setmealId;
 
     //菜品id
-    private Long dishId;
+    private Integer dishId;
 
     //菜品名称 （冗余字段）
     private String name;

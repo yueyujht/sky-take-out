@@ -11,7 +11,6 @@ import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.exception.SetmealEnableFailedException;
-import com.sky.exception.SetmealUpdateFailedException;
 import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
@@ -27,8 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.sky.constant.MessageConstant.SETMEAL_ON_SALE_FOR_UPDATE;
 
 @Slf4j
 @Service
@@ -71,7 +68,7 @@ public class SetmealServiceImpl implements SetmealService {
         setmealMapper.insert(setmeal);
         // 添加套餐的菜品（setmeal_dish表）
         //  设置套餐id
-        Long setmealId = setmeal.getId();
+        Integer setmealId = setmeal.getId();
         List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
         if(setmealDishes != null && !setmealDishes.isEmpty()){
             for(SetmealDish setmealDish : setmealDishes){
@@ -88,13 +85,13 @@ public class SetmealServiceImpl implements SetmealService {
      * @return
      */
     @Override
-    public SetmealVO getSmBySmIdWithDish(Long id) {
+    public SetmealVO getSmBySmIdWithDish(Integer id) {
         // 查询setmeal表，根据套餐id返回套餐
         Setmeal setmeal = setmealMapper.getSmBySmId(id);
         // 查询setmeal_dish表，根据套餐id返回套餐下的菜品
         List<SetmealDish> setmealDishes = setmealDishMapper.getSetmealDishBySmId(id);
         // 根据分类id查找分类名称并添加
-        Long cateId = setmeal.getCategoryId();
+        Integer cateId = setmeal.getCategoryId();
         String cateName = categoryMapper.query(cateId);
         // 返回完整的SetmealVO
         SetmealVO setmealVO = new SetmealVO();
@@ -109,9 +106,9 @@ public class SetmealServiceImpl implements SetmealService {
      * @param ids
      */
     @Override
-    public void deleteBatch(List<Long> ids) {
+    public void deleteBatch(List<Integer> ids) {
         // 判断是否符合规则，只要有一个不符合则删除失败
-        for(Long id : ids){
+        for(Integer id : ids){
             // 根据套餐id查询套餐
             Setmeal setmeal = setmealMapper.getSmBySmId(id);
             if(setmeal.getStatus().equals(StatusConstant.ENABLE)){
@@ -142,15 +139,15 @@ public class SetmealServiceImpl implements SetmealService {
         setmealMapper.update(setmeal);
         // 修改套餐内菜品信息
         //   删除
-        Long id = setmealDTO.getId();
-        List<Long> ids = new ArrayList<>();
+        Integer id = setmealDTO.getId();
+        List<Integer> ids = new ArrayList<>();
         ids.add(id);
         setmealDishMapper.deleteBatchBySmId(ids);
         //   添加
         List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
         if(setmealDishes != null && !setmealDishes.isEmpty()){
             // 设置套餐id
-            Long setmealId = setmealDTO.getId();
+            Integer setmealId = setmealDTO.getId();
             for (SetmealDish setmealDish : setmealDishes) {
                 setmealDish.setSetmealId(setmealId);
             }
@@ -163,13 +160,13 @@ public class SetmealServiceImpl implements SetmealService {
      * @param status
      */
     @Override
-    public void startOrStop(Integer status,Long id) {
+    public void startOrStop(Integer status, Integer id) {
         // 取出套餐内的菜品，查询是否处于启售状态
         //   根据套餐id查询所有菜品的id(setmeal_dish)
         List<SetmealDish> setmealDishes = setmealDishMapper.getSetmealDishBySmId(id);
         for(SetmealDish setmealDish : setmealDishes){
             // 查询菜品的状态(dish)
-            Long dishId = setmealDish.getDishId();
+            Integer dishId = setmealDish.getDishId();
             Dish dish = dishMapper.getById(Math.toIntExact(dishId));
             if(dish.getStatus().equals(StatusConstant.DISABLE)){
                 throw new SetmealEnableFailedException(MessageConstant.SETMEAL_ENABLE_FAILED);
@@ -181,4 +178,16 @@ public class SetmealServiceImpl implements SetmealService {
         setmeal.setId(id);
         setmealMapper.update(setmeal);
     }
+
+    /**
+     * List<Setmeal>
+     * @param setmeal
+     * @return
+     */
+    @Override
+    public List<Setmeal> getSetmealByCategoryId(Setmeal setmeal) {
+        return setmealMapper.getSmByCateId(setmeal);
+    }
+
+
 }

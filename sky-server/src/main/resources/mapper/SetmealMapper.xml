@@ -40,4 +40,13 @@
         </set>
         where id = #{id}
     </update>
+
+    <select id="getSmByCateId" resultType="com.sky.entity.Setmeal">
+        select * from setmeal
+        <where>
+            <if test="categoryId != ''">category_id = #{categoryId}</if>
+            <if test="status != ''">and status = #{status}</if>
+        </where>
+    </select>
+
 </mapper>

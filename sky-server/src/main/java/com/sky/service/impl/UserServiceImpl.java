@@ -7,10 +7,9 @@ import com.sky.dto.UserLoginDTO;
 import com.sky.entity.User;
 import com.sky.exception.LoginFailedException;
 import com.sky.mapper.UserMapper;
-import com.sky.properties.JwtProperties;
 import com.sky.properties.WeChatProperties;
+import com.sky.service.UserService;
 import com.sky.utils.HttpClientUtil;
-import com.sky.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,7 @@ import java.util.Map;
 
 @Service
 @Slf4j
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
     private static final String wx_login = "https://api.weixin.qq.com/sns/jscode2session";
     @Autowired
     private WeChatProperties weChatProperties;

@@ -19,7 +19,6 @@ import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +48,7 @@ public class DishServiceImpl implements DishService {
         // 添加菜品
         dishMapper.insert(dish);
         // 获取insert语句返回的主键值
-        Long id = dish.getId();
+        Integer id = dish.getId();
         // 添加菜品口味（>=1）
         List<DishFlavor> dishFlavorList = dishDTO.getFlavors();
         // 判断是否添加了口味
@@ -152,7 +151,7 @@ public class DishServiceImpl implements DishService {
     public void startOrStop(Integer status,Integer id) {
         Dish dish = new Dish();
         dish.setStatus(status);
-        dish.setId(Long.valueOf(id));
+        dish.setId(id);
         dishMapper.update(dish);
     }
 
@@ -162,7 +161,30 @@ public class DishServiceImpl implements DishService {
      */
     @Override
     public List<Dish> getsByCateId(Integer categoryId) {
-        List<Dish> dishList = dishMapper.getsByCateId(categoryId);
-        return dishList;
+        return dishMapper.getsByCateId(categoryId);
+    }
+
+    /**
+     * 根据分类id查询菜品及其口味
+     * @param categoryId
+     * @return
+     */
+    @Override
+    public List<DishVO> listWithFlavor(Integer categoryId) {
+        List<DishVO> dishVOList = new ArrayList<>();
+        List<Dish> dishes = dishMapper.getsByCateId(categoryId);
+        for(Dish dish : dishes){
+            // 停售的菜品不展示
+            if(dish.getStatus().equals(StatusConstant.DISABLE)){
+                continue;
+            }
+            Integer dishId = dish.getId();
+            List<DishFlavor> dishFlavorList = dishFlavorMapper.queryByDishId(dishId);
+            DishVO dishVO = new DishVO();
+            BeanUtils.copyProperties(dish,dishVO);
+            dishVO.setFlavors(dishFlavorList);
+            dishVOList.add(dishVO);
+        }
+        return dishVOList;
     }
 }

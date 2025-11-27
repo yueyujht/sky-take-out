@@ -50,5 +50,5 @@ public interface EmployeeMapper {
      * @return
      */
     @Select("select * from employee where id = #{id}")
-    Employee getById(Long id);
+    Employee getById(Integer id);
 }

@@ -107,7 +107,7 @@ public class EmployeeController {
     @PostMapping("status/{status}")
     @ApiOperation("启用、禁用员工账号")
     // 用@PathVariable取出路径参数
-    public Result startOrStop(@PathVariable Integer status, Long id){
+    public Result startOrStop(@PathVariable Integer status, Integer id){
         log.info("启用、禁用员工账号：{} {}",status,id);
         employeeService.startOrStop(status,id);
         return Result.success();
@@ -120,7 +120,7 @@ public class EmployeeController {
      */
     @GetMapping("/{id}")
     @ApiOperation("根据id查询员工信息")
-    public Result<Employee> getEmpById(@PathVariable Long id){
+    public Result<Employee> getEmpById(@PathVariable Integer id){
         log.info("根据id查询员工信息：{}",id);
         Employee empolyee = employeeService.getByiId(id);
         System.out.println(empolyee);

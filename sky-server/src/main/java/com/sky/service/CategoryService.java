@@ -33,7 +33,7 @@ public interface CategoryService {
      * 启用、禁用分类
      * @param status
      */
-    void startOrStop(Integer status,Long id);
+    void startOrStop(Integer status, Integer id);
 
     /**
      * 修改分类

@@ -79,7 +79,7 @@ public class CategoryServiceImpl implements CategoryService {
      * @param status
      */
     @Override
-    public void startOrStop(Integer status,Long id) {
+    public void startOrStop(Integer status, Integer id) {
         Category category = Category.builder()
                 .status(status)
                 .id(id)

@@ -15,7 +15,7 @@ public class Category implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Long id;
+    private Integer id;
 
     //类型: 1菜品分类 2套餐分类
     private Integer type;
@@ -36,8 +36,8 @@ public class Category implements Serializable {
     private LocalDateTime updateTime;
 
     //创建人
-    private Long createUser;
+    private Integer createUser;
 
     //修改人
-    private Long updateUser;
+    private Integer updateUser;
 }

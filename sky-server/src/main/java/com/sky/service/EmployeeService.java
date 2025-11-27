@@ -33,14 +33,14 @@ public interface EmployeeService {
      * @param status
      * @param id
      */
-    void startOrStop(Integer status, Long id);
+    void startOrStop(Integer status, Integer id);
 
     /**
      * 根据id查询员工信息
      * @param id
      * @return
      */
-    Employee getByiId(Long id);
+    Employee getByiId(Integer id);
 
     /**
      * 编辑员工信息
