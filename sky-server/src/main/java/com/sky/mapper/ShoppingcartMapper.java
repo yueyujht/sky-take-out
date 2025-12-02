@@ -22,12 +22,15 @@ public interface ShoppingcartMapper {
      */
     void addCart(ShoppingCart shoppingCartDTO);
 
-    List<ShoppingCart> list();
+    List<ShoppingCart> list(Integer userId);
 
     void updateCart(ShoppingCart shoppingCart);
 
     void delOneCart(ShoppingCart shoppingCart);
 
-    @Delete("delete from sky_take_out.shopping_cart")
-    void delAllCart();
+    @Delete("delete from sky_take_out.shopping_cart where user_id = #{userId}")
+    void delAllCart(Integer userId);
+
+    @Select("select sum(number) from shopping_cart")
+    Integer countCartNumber();
 }

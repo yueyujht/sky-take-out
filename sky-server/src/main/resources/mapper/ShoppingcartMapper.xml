@@ -11,7 +11,7 @@
     </insert>
 
     <select id="list" resultType="com.sky.entity.ShoppingCart">
-        select * from shopping_cart
+        select * from shopping_cart where user_id = #{userId}
     </select>
 
     <select id="countNumber" resultType="java.lang.Integer">

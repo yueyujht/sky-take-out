@@ -6,6 +6,7 @@ import com.sky.mapper.AddressBookMapper;
 import com.sky.service.AddressBookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -67,8 +68,16 @@ public class AddressBookServiceImpl implements AddressBookService {
      * @param id
      */
     @Override
+    @Transactional
     public void setDefaultAddr(Integer id) {
-        AddressBook addressBook = AddressBook.builder()
+        AddressBook addressBook;
+        // 一、将原来的默认地址修改为普通地址
+        addressBook = addressBookMapper.queryDefaultAddr(BaseContext.getCurrentId());
+        addressBook.setIsDefault(0);
+        addressBookMapper.updateAddr(addressBook);
+
+        // 二、将id对应的地址修改为默认
+        addressBook = AddressBook.builder()
                 .isDefault(1)
                 .id(id)
                 .build();

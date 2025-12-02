@@ -35,13 +35,15 @@ public class ShoppingcartServiceImpl implements ShoppingcartService {
     @Transactional
     public void addCart(ShoppingCartDTO shoppingCartDTO) {
         Integer userId = BaseContext.getCurrentId();
+        ShoppingCart shoppingCart;  // 购物车对象
+        Integer number;  // 购物车一条记录中的数量
         if (shoppingCartDTO.getDishId() != null) {
             // 判断菜品在购物车是否存在
             Integer dishId = shoppingCartDTO.getDishId();
-            Integer number = shoppingcartMapper.countDishNumber(userId,dishId);
+            number = shoppingcartMapper.countDishNumber(userId,dishId);
             // 获取name、userId、dishId、dishFlavor、image、amount
             Dish dish = dishMapper.getById(dishId);
-            ShoppingCart shoppingCart = ShoppingCart.builder()
+            shoppingCart = ShoppingCart.builder()
                     .image(dish.getImage())
                     .name(dish.getName())
                     .dishFlavor(shoppingCartDTO.getDishFlavor())
@@ -49,38 +51,28 @@ public class ShoppingcartServiceImpl implements ShoppingcartService {
                     .userId(userId)
                     .amount(dish.getPrice())
                     .build();
-            if(number == null){
-                // insert
-                shoppingCart.setNumber(1);
-                shoppingCart.setCreateTime(LocalDateTime.now());
-                shoppingcartMapper.addCart(shoppingCart);
-            } else {
-                // update
-                shoppingCart.setNumber(number + 1);
-                shoppingcartMapper.updateCart(shoppingCart);
-            }
         } else {
             Integer setmealId = shoppingCartDTO.getSetmealId();
-            Integer number = shoppingcartMapper.countSetmealNumber(userId,setmealId);
+            number = shoppingcartMapper.countSetmealNumber(userId,setmealId);
             Setmeal setmeal = setmealMapper.getSmBySmId(setmealId);
-            ShoppingCart shoppingCart = ShoppingCart.builder()
+            shoppingCart = ShoppingCart.builder()
                     .image(setmeal.getImage())
                     .name(setmeal.getName())
                     .setmealId(setmeal.getId())
                     .userId(userId)
                     .amount(setmeal.getPrice())
                     .build();
-            // 判断套餐在购物车是否存在
-            if(number == null){
-                // insert
-                shoppingCart.setNumber(1);
-                shoppingCart.setCreateTime(LocalDateTime.now());
-                shoppingcartMapper.addCart(shoppingCart);
-            } else {
-                // update
-                shoppingCart.setNumber(number + 1);
-                shoppingcartMapper.updateCart(shoppingCart);
-            }
+        }
+        // 判断套餐/菜品在购物车是否存在
+        if(number == null){
+            // insert
+            shoppingCart.setNumber(1);
+            shoppingCart.setCreateTime(LocalDateTime.now());
+            shoppingcartMapper.addCart(shoppingCart);
+        } else {
+            // update
+            shoppingCart.setNumber(number + 1);
+            shoppingcartMapper.updateCart(shoppingCart);
         }
     }
 
@@ -90,7 +82,8 @@ public class ShoppingcartServiceImpl implements ShoppingcartService {
      */
     @Override
     public List<ShoppingCart> list() {
-        return shoppingcartMapper.list();
+        Integer userId = BaseContext.getCurrentId();
+        return shoppingcartMapper.list(userId);
     }
 
     /**
@@ -98,6 +91,7 @@ public class ShoppingcartServiceImpl implements ShoppingcartService {
      * @param shoppingCartDTO
      */
     @Override
+    @Transactional
     public void delOneCart(ShoppingCartDTO shoppingCartDTO) {
         Integer userId = BaseContext.getCurrentId();
         // 查看数量是否为1
@@ -122,6 +116,7 @@ public class ShoppingcartServiceImpl implements ShoppingcartService {
 
     @Override
     public void cleanCart() {
-        shoppingcartMapper.delAllCart();
+        Integer userId = BaseContext.getCurrentId();
+        shoppingcartMapper.delAllCart(userId);
     }
 }
