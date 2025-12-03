@@ -5,15 +5,19 @@
 
     <insert id="submitOrder" useGeneratedKeys="true" keyProperty="id">
         insert into sky_take_out.orders
-            (status, user_id, address_book_id, order_time, pay_method, pay_status, amount, remark, phone, address, user_name, estimated_delivery_time,consignee, delivery_status, pack_amount, tableware_number, tableware_status)
+            (status, user_id, number, address_book_id, order_time, pay_method, pay_status, amount, remark, phone, address, user_name, estimated_delivery_time,consignee, delivery_status, pack_amount, tableware_number, tableware_status)
         VALUES
-            (#{status},#{userId},#{addressBookId},#{orderTime},#{payMethod},#{payStatus},#{amount},#{remark},#{phone},#{address},#{userName},#{estimatedDeliveryTime},#{consignee},#{deliveryStatus},#{packAmount},#{tablewareNumber},#{tablewareStatus})
+            (#{status},#{userId},#{number},#{addressBookId},#{orderTime},#{payMethod},#{payStatus},#{amount},#{remark},#{phone},#{address},#{userName},#{estimatedDeliveryTime},#{consignee},#{deliveryStatus},#{packAmount},#{tablewareNumber},#{tablewareStatus})
     </insert>
 
     <update id="updateOrder">
         update sky_take_out.orders
         <set>
-            <if test="number != null">number = #{number}</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="payStatus != null">pay_status = #{payStatus},</if>
+            <if test="checkoutTime != null">checkout_time = #{checkoutTime}</if>
+            <if test="cancelTime != null">cancel_time = #{cancelTime}</if>
+            <if test="cancelReason != null">cancel_reason = #{cancelReason}</if>
         </set>
         where id = #{id}
     </update>
@@ -26,4 +30,12 @@
                 (#{orderDetail.name},#{orderDetail.image},#{orderDetail.orderId},#{orderDetail.dishId},#{orderDetail.setmealId},#{orderDetail.dishFlavor},#{orderDetail.amount})
             </foreach>
     </insert>
+
+    <select id="page" resultType="com.sky.vo.OrderVO">
+        select * from sky_take_out.orders
+        <where>
+            <if test="status != null">status = #{status} and</if>
+            user_id = #{userId}
+        </where>
+    </select>
 </mapper>

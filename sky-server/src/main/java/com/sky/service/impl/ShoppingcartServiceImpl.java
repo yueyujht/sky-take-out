@@ -3,6 +3,7 @@ package com.sky.service.impl;
 import com.sky.context.BaseContext;
 import com.sky.dto.ShoppingCartDTO;
 import com.sky.entity.Dish;
+import com.sky.entity.DishFlavor;
 import com.sky.entity.Setmeal;
 import com.sky.entity.ShoppingCart;
 import com.sky.mapper.DishMapper;
@@ -37,12 +38,24 @@ public class ShoppingcartServiceImpl implements ShoppingcartService {
         Integer userId = BaseContext.getCurrentId();
         ShoppingCart shoppingCart;  // 购物车对象
         Integer number;  // 购物车一条记录中的数量
+        Boolean is_dish_insert = true;
+        String dishFlavor = shoppingCartDTO.getDishFlavor();
         if (shoppingCartDTO.getDishId() != null) {
             // 判断菜品在购物车是否存在
             Integer dishId = shoppingCartDTO.getDishId();
-            number = shoppingcartMapper.countDishNumber(userId,dishId);
+            number = shoppingcartMapper.countDishNumber(userId,dishId,dishFlavor);
             // 获取name、userId、dishId、dishFlavor、image、amount
             Dish dish = dishMapper.getById(dishId);
+            // 判断口味是否发生变化
+            List<String> dishFlavorList = shoppingcartMapper.listFlavorByDishId(dishId);
+            if(dishFlavorList != null){
+                for(String df : dishFlavorList){
+                    if(dishFlavor.equals(df)){
+                        is_dish_insert = false;
+                    }
+                }
+            }
+
             shoppingCart = ShoppingCart.builder()
                     .image(dish.getImage())
                     .name(dish.getName())
@@ -64,7 +77,7 @@ public class ShoppingcartServiceImpl implements ShoppingcartService {
                     .build();
         }
         // 判断套餐/菜品在购物车是否存在
-        if(number == null){
+        if(number == null && is_dish_insert){
             // insert
             shoppingCart.setNumber(1);
             shoppingCart.setCreateTime(LocalDateTime.now());
@@ -97,7 +110,7 @@ public class ShoppingcartServiceImpl implements ShoppingcartService {
         // 查看数量是否为1
         Integer number;
         if(shoppingCartDTO.getDishId() != null){
-            number = shoppingcartMapper.countDishNumber(userId,shoppingCartDTO.getDishId());
+            number = shoppingcartMapper.countDishNumber(userId,shoppingCartDTO.getDishId(),shoppingCartDTO.getDishFlavor());
         } else {
             number = shoppingcartMapper.countSetmealNumber(userId,shoppingCartDTO.getSetmealId());
         }
