@@ -4,12 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
-import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
-import com.sky.dto.ShoppingCartDTO;
+import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
@@ -19,18 +15,23 @@ import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PutMapping;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 public class OrderServiceImpl implements OrderService {
     @Autowired
@@ -69,29 +70,27 @@ public class OrderServiceImpl implements OrderService {
         // address
         AddressBook addressBook = addressBookMapper.getAddrById(addressBookId);
         String addr = addressBook.getProvinceName() + addressBook.getCityName() +  addressBook.getDistrictName();
-        String addrCode = addressBook.getProvinceCode() + addressBook.getCityCode() +  addressBook.getDistrictCode();
         // user
         User user = userMapper.getUserByid(userId);
-        // 配送状态
         orders = Orders.builder()
-                .payMethod(ordersSubmitDTO.getPayMethod())      // 支付方式 1微信，2支付宝
-                .amount(ordersSubmitDTO.getAmount())            // 实收金额
-                .remark(ordersSubmitDTO.getRemark())            // 备注
-                .packAmount(ordersSubmitDTO.getPackAmount())    // 打包费
-                .estimatedDeliveryTime(ordersSubmitDTO.getEstimatedDeliveryTime())
-                .deliveryStatus(ordersSubmitDTO.getDeliveryStatus())
-                .tablewareStatus(ordersSubmitDTO.getTablewareStatus())
-                .tablewareNumber(ordersSubmitDTO.getTablewareNumber())
-                .addressBookId(addressBookId)                   // 地址id
-                .status(Orders.PENDING_PAYMENT)                                      // 订单状态
-                .userId(userId)                                 // 下单用户id
-                .orderTime(LocalDateTime.now())                 // 下单时间
-                .payStatus(Orders.UN_PAID)                                   // 支付状态
-                .userName(user.getName())                       //
-                .phone(addressBook.getPhone())
-                .address(addr)                                  // 地址
-                .consignee(addressBook.getConsignee())
-                .number(System.currentTimeMillis() + "")
+                .payMethod(ordersSubmitDTO.getPayMethod())              // 支付方式 1微信，2支付宝
+                .amount(ordersSubmitDTO.getAmount())                    // 实收金额
+                .remark(ordersSubmitDTO.getRemark())                    // 备注
+                .packAmount(ordersSubmitDTO.getPackAmount())            // 打包费
+                .estimatedDeliveryTime(ordersSubmitDTO.getEstimatedDeliveryTime()) //期望送达时间
+                .deliveryStatus(ordersSubmitDTO.getDeliveryStatus())    //配送状态
+                .tablewareStatus(ordersSubmitDTO.getTablewareStatus())  // 餐具数量状态
+                .tablewareNumber(ordersSubmitDTO.getTablewareNumber())  // 餐具数量
+                .addressBookId(addressBookId)                           // 地址id
+                .status(Orders.PENDING_PAYMENT)                         // 订单状态
+                .userId(userId)                                         // 下单用户id
+                .orderTime(LocalDateTime.now())                         // 下单时间
+                .payStatus(Orders.UN_PAID)                              // 支付状态
+                .userName(user.getName())                               // 用户名
+                .phone(addressBook.getPhone())                          // 电话
+                .address(addr)                                          // 地址
+                .consignee(addressBook.getConsignee())                  // 收货人
+                .number(System.currentTimeMillis() + "")                // 订单编号
                 .build();
         orderMapper.submitOrder(orders);
 
@@ -154,7 +153,6 @@ public class OrderServiceImpl implements OrderService {
      * @param outTradeNo
      */
     public void paySuccess(String outTradeNo) {
-
         // 根据订单号查询订单
         Orders ordersDB = orderMapper.getByNumber(outTradeNo);
 
@@ -216,9 +214,14 @@ public class OrderServiceImpl implements OrderService {
         Orders orders = Orders.builder()
                 .id(id)
                 .status(Orders.CANCELLED)
-                .payStatus(Orders.REFUND)
                 .cancelTime(LocalDateTime.now())
+                .cancelReason("?")
                 .build();
+        Orders orderDB = orderMapper.getById(id);
+        if(orderDB.getPayStatus() == 1){
+            // 退款操作
+            orders.setPayStatus(Orders.REFUND);
+        }
         orderMapper.updateOrder(orders);
     }
 
@@ -239,4 +242,95 @@ public class OrderServiceImpl implements OrderService {
         }
 
     }
+
+    // ------------------------管理端-----------------------------------
+
+    /**
+     * 订单搜索
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    @Override
+    @Transactional
+    public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
+        PageHelper.startPage(ordersPageQueryDTO.getPage(),ordersPageQueryDTO.getPageSize());
+        Page<OrderVO> page = orderMapper.page(ordersPageQueryDTO);
+        List<OrderVO> orderVOList = page.getResult();
+        for(OrderVO orderVO : orderVOList){
+            Integer orderId = orderVO.getId();
+            List<OrderDetail> orderDetailList = orderDetailMapper.getsByOederId(orderId);
+            StringBuilder orderDishes = new StringBuilder();
+            orderDetailList.forEach(od -> {
+                orderDishes.append(od.getName());
+            });
+            orderVO.setOrderDishes(orderDishes.toString());
+        }
+        return new PageResult(page.getTotal(),orderVOList);
+    }
+
+    @Override
+    public OrderStatisticsVO countByOrderStatus() {
+        Map<String,Integer> statusMap = orderMapper.countByOrderStatus();
+        for (int i = 0; i < 3; i++) {
+            statusMap.putIfAbsent(i + "", 0);
+        }
+        return new OrderStatisticsVO(statusMap.get("0"),statusMap.get("1"),statusMap.get("2"));
+    }
+
+    /**
+     * 接单
+     * @param id
+     */
+    @Override
+    public void comfirmOrder(Integer id) {
+        Orders orders = new Orders();
+        BeanUtils.copyProperties(orderMapper.getById(id),orders);
+        orders.setStatus(Orders.CONFIRMED);
+        orderMapper.updateOrder(orders);
+    }
+
+    /**
+     * 拒单
+     * --- 修改订单：拒单理由，订单状态，支付状态
+     * --- 只有“待接单”才能 拒单
+     * @param ordersRejectionDTO
+     */
+    @Override
+    public void rejection(OrdersRejectionDTO ordersRejectionDTO) {
+        Orders orders = new Orders();
+        BeanUtils.copyProperties(orderMapper.getById(ordersRejectionDTO.getId()),orders);
+        orders.setStatus(7);
+        orders.setRejectionReason(ordersRejectionDTO.getRejectionReason());
+        orders.setPayStatus(Orders.REFUND);
+        orderMapper.updateOrder(orders);
+    }
+
+    /**
+     * 派送订单
+     * --- 修改订单状态
+     * @param id
+     */
+    @Override
+    @Transactional
+    public void delivery(Integer id) {
+        Orders orders = new Orders();
+        BeanUtils.copyProperties(orderMapper.getById(id),orders);
+        orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
+        orderMapper.updateOrder(orders);
+    }
+
+    /**
+     * 完成订单
+     * --- 修改订单状态、送达时间
+     * @param id
+     */
+    @Override
+    public void complete(Integer id) {
+        Orders orders = new Orders();
+        BeanUtils.copyProperties(orderMapper.getById(id),orders);
+        orders.setStatus(Orders.COMPLETED);
+        orders.setCheckoutTime(LocalDateTime.now());
+        orderMapper.updateOrder(orders);
+    }
+
 }

@@ -34,8 +34,16 @@
     <select id="page" resultType="com.sky.vo.OrderVO">
         select * from sky_take_out.orders
         <where>
-            <if test="status != null">status = #{status} and</if>
-            user_id = #{userId}
+            <if test="status != null">status = #{status}</if>
+            <if test="userId != null">and user_id = #{userId}</if>
+            <if test="phone != null">and phone = #{phone}</if>
+            <if test="beginTime != null and endTime != null">and order_time between #{beginTime} and #{endTime}</if>
+            <if test="number != null">and number = #{number}</if>
         </where>
+        order by order_time desc
+    </select>
+
+    <select id="countByOrderStatus" resultType="map">
+        select status, count(*) cnt from orders where status in (2,3,4) group by status
     </select>
 </mapper>

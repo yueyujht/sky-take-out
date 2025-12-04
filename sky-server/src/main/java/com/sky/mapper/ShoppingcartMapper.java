@@ -29,6 +29,7 @@ public interface ShoppingcartMapper {
 
     void delOneCart(ShoppingCart shoppingCart);
 
+    // 清空购物车
     @Delete("delete from sky_take_out.shopping_cart where user_id = #{userId}")
     void delAllCart(Integer userId);
 
